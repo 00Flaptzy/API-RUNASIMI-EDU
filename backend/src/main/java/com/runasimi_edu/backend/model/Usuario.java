@@ -18,7 +18,10 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import lombok.Data;
-
+import lombok.Getter;
+import lombok.Setter;
+@Getter
+@Setter
 @Data
 @Entity
 @Table(name = "usuarios")
@@ -60,9 +63,11 @@ public class Usuario {
     private List<AccesoDispositivo> accesosDispositivos;
 
     @OneToMany(mappedBy = "alumno")
+   
     private List<SesionAlumno> sesiones;
 
     @OneToMany(mappedBy = "alumno")
+    
     private List<Logro> logros;
 
     @OneToMany(mappedBy = "docente")

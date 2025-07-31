@@ -17,4 +17,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     List<Usuario> findByGradoId(Long gradoId);
     List<Usuario> findByActivo(Boolean activo);
     List<Usuario> findByRolAndActivo(RolUsuario alumno, boolean b);
+    List<Usuario> findByRolAndGradoId(RolUsuario rol, Long gradoId);
+
 }

@@ -2,31 +2,41 @@ package com.runasimi_edu.backend.dto.response;
 
 import java.util.Date;
 
+import com.runasimi_edu.backend.model.SesionAlumno.EstadoSesion;
+
 import lombok.Data;
 
 @Data
 public class SesionAlumnoResponse {
     private Long id;
+
     private Long alumnoId;
-    private String nombreAlumno;
+    private String alumnoNombre;
+
     private Long actividadId;
-    private String nombreActividad;
+    private String actividadNombre;
+
     private Date fechaInicio;
     private Date fechaFin;
+
     private Boolean completado;
     private Integer puntosObtenidos;
     private Integer intentos;
     private Integer tiempoSegundos;
-    private String estado;
+
+    private EstadoSesion estado;
     private Integer ultimoItem;
+
     private String detalles;
 
     public SesionAlumnoResponse() {
     }
 
-    public SesionAlumnoResponse(Long actividadId, Long alumnoId, Boolean completado, String detalles, String estado, Date fechaFin, Date fechaInicio, Long id, Integer intentos, String nombreActividad, String nombreAlumno, Integer puntosObtenidos, Integer tiempoSegundos, Integer ultimoItem) {
+    public SesionAlumnoResponse(Long actividadId, String actividadNombre, Long alumnoId, String alumnoNombre, Boolean completado, String detalles, EstadoSesion estado, Date fechaFin, Date fechaInicio, Long id, Integer intentos, Integer puntosObtenidos, Integer tiempoSegundos, Integer ultimoItem) {
         this.actividadId = actividadId;
+        this.actividadNombre = actividadNombre;
         this.alumnoId = alumnoId;
+        this.alumnoNombre = alumnoNombre;
         this.completado = completado;
         this.detalles = detalles;
         this.estado = estado;
@@ -34,8 +44,6 @@ public class SesionAlumnoResponse {
         this.fechaInicio = fechaInicio;
         this.id = id;
         this.intentos = intentos;
-        this.nombreActividad = nombreActividad;
-        this.nombreAlumno = nombreAlumno;
         this.puntosObtenidos = puntosObtenidos;
         this.tiempoSegundos = tiempoSegundos;
         this.ultimoItem = ultimoItem;

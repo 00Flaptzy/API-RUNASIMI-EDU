@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.runasimi_edu.backend.dto.response.GradoResponse;
@@ -79,9 +78,9 @@ public class GradoController {
     }
 
     // 6. Buscar grados por coincidencia de nombre
-    @GetMapping("/buscar")
-    public ResponseEntity<List<Grado>> buscarPorNombre(@RequestParam String nombre) {
-        List<Grado> resultados = gradoService.buscarPorNombre(nombre);
-        return ResponseEntity.ok(resultados);
-    }
+    @GetMapping("/ordenados")
+    public ResponseEntity<List<GradoResponse>> listarGradosOrdenados() {
+    return ResponseEntity.ok(gradoService.listarGradosOrdenados());
+}
+
 }

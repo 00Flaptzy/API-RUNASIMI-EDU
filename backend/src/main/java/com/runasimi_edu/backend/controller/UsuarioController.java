@@ -57,6 +57,14 @@ public class UsuarioController {
     public ResponseEntity<Boolean> existePorEmail(@PathVariable String email) {
         return ResponseEntity.ok(usuarioService.existePorEmail(email));
     }
+    
+    @GetMapping("/rol/{rol}/grado/{gradoId}")
+    public ResponseEntity<List<UsuarioResponse>> listarPorRolYGrado(
+        @PathVariable RolUsuario rol,
+        @PathVariable Long gradoId) {
+    return ResponseEntity.ok(usuarioService.listarPorRolYGrado(rol, gradoId));
+}
+
 
     @GetMapping("/rol/{rol}")
     public ResponseEntity<List<UsuarioResponse>> listarPorRol(@PathVariable RolUsuario rol) {

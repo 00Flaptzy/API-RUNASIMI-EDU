@@ -4,15 +4,9 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import com.runasimi_edu.backend.dto.request.FraseOrdenableRequest;
 import com.runasimi_edu.backend.model.Actividad.NivelDificultad;
 import com.runasimi_edu.backend.model.FraseOrdenable;
 import com.runasimi_edu.backend.service.FraseOrdenableService;
@@ -25,13 +19,16 @@ public class FraseOrdenableController {
     @Autowired
     private FraseOrdenableService fraseOrdenableService;
 
-    // Guardar o actualizar una frase
     @PostMapping
-    public ResponseEntity<FraseOrdenable> guardar(@RequestBody FraseOrdenable frase) {
-        return ResponseEntity.ok(fraseOrdenableService.guardar(frase));
+    public ResponseEntity<FraseOrdenable> guardar(@RequestBody FraseOrdenableRequest request) {
+        try {
+            FraseOrdenable frase = fraseOrdenableService.guardarDesdeDto(request);
+            return ResponseEntity.ok(frase);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 
-    // Obtener una frase por ID
     @GetMapping("/{id}")
     public ResponseEntity<FraseOrdenable> obtenerPorId(@PathVariable Long id) {
         return fraseOrdenableService.buscarPorId(id)
@@ -39,7 +36,6 @@ public class FraseOrdenableController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Eliminar una frase por ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         try {
@@ -50,26 +46,23 @@ public class FraseOrdenableController {
         }
     }
 
-    // Listar todas las frases
     @GetMapping
     public ResponseEntity<List<FraseOrdenable>> listarTodas() {
         return ResponseEntity.ok(fraseOrdenableService.listarTodas());
     }
 
-    // Buscar frases por ID de actividad
     @GetMapping("/actividad/{actividadId}")
     public ResponseEntity<List<FraseOrdenable>> buscarPorActividadId(@PathVariable Long actividadId) {
         return ResponseEntity.ok(fraseOrdenableService.buscarPorActividadId(actividadId));
     }
 
-    // Buscar frases por nivel de dificultad
     @GetMapping("/nivel/{nivel}")
     public ResponseEntity<List<FraseOrdenable>> buscarPorNivel(@PathVariable String nivel) {
         try {
             NivelDificultad dificultad = NivelDificultad.valueOf(nivel.toUpperCase());
             return ResponseEntity.ok(fraseOrdenableService.buscarPorNivel(dificultad));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build(); // Nivel no válido
+            return ResponseEntity.badRequest().build();
         }
     }
 }

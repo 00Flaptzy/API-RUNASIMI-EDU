@@ -2,6 +2,8 @@ package com.runasimi_edu.backend.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -28,9 +30,11 @@ public class Grado {
     private Integer orden;
 
     @OneToMany(mappedBy = "grado")
+    @JsonIgnore
     private List<Usuario> usuarios;
 
     @OneToMany(mappedBy = "grado")
+    @JsonIgnore
     private List<Actividad> actividades;
 
     public Grado(){

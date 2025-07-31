@@ -54,12 +54,12 @@ public class GradoService {
     }
 
     public Grado actualizarGrado(Long id, Grado nuevoGrado) {
-        return gradoRepository.findById(id).map(gradoExistente -> {
-            gradoExistente.setNombre(nuevoGrado.getNombre());
-            gradoExistente.setDescripcion(nuevoGrado.getDescripcion());
-            gradoExistente.setOrden(nuevoGrado.getOrden());
-            return gradoExistente;
-        }).orElseThrow(() -> new RuntimeException("Grado no encontrado con ID: " + id));
+    return gradoRepository.findById(id).map(gradoExistente -> {
+        gradoExistente.setNombre(nuevoGrado.getNombre());
+        gradoExistente.setDescripcion(nuevoGrado.getDescripcion());
+        gradoExistente.setOrden(nuevoGrado.getOrden());
+        return gradoRepository.save(gradoExistente); // ✅ Aquí se guardan los cambios
+    }).orElseThrow(() -> new RuntimeException("Grado no encontrado con ID: " + id));
     }
 
     public void eliminarGrado(Long id) {

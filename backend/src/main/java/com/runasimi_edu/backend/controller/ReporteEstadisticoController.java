@@ -2,10 +2,9 @@ package com.runasimi_edu.backend.controller;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.runasimi_edu.backend.model.ReporteEstadistico;
+import com.runasimi_edu.backend.dto.request.ReporteEstadisticoRequestDTO;
+import com.runasimi_edu.backend.dto.response.ReporteEstadisticoResponseDTO;
 import com.runasimi_edu.backend.model.ReporteEstadistico.TipoReporte;
-import com.runasimi_edu.backend.model.Usuario;
 import com.runasimi_edu.backend.service.ReporteEstadisticoService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,67 +25,42 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReporteEstadisticoController {
 
-    private final ReporteEstadisticoService reporteEstadisticoService;
+    private final ReporteEstadisticoService reporteService;
 
-    // Crear o actualizar reporte
+    // Crear un nuevo reporte
     @PostMapping
-    public ResponseEntity<ReporteEstadistico> guardar(@RequestBody ReporteEstadistico reporte) {
-        ReporteEstadistico nuevo = reporteEstadisticoService.guardar(reporte);
-        return ResponseEntity.ok(nuevo);
+    public ResponseEntity<ReporteEstadisticoResponseDTO> crearReporte(
+            @RequestBody ReporteEstadisticoRequestDTO requestDTO) {
+        return ResponseEntity.ok(reporteService.guardar(requestDTO));
     }
 
-    // Obtener todos los reportes
-    @GetMapping
-    public ResponseEntity<List<ReporteEstadistico>> listarTodos() {
-        return ResponseEntity.ok(reporteEstadisticoService.listarTodos());
+    // Listar todos los reportes por docente (usuario)
+    @GetMapping("/docente/{usuarioId}")
+    public ResponseEntity<List<ReporteEstadisticoResponseDTO>> listarPorDocente(
+            @PathVariable Long usuarioId) {
+        return ResponseEntity.ok(reporteService.listarPorDocente(usuarioId));
     }
 
-    // Obtener por ID
-    @GetMapping("/{id}")
-    public ResponseEntity<ReporteEstadistico> obtenerPorId(@PathVariable Long id) {
-        Optional<ReporteEstadistico> encontrado = reporteEstadisticoService.buscarPorId(id);
-        return encontrado.map(ResponseEntity::ok)
-                         .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    // Eliminar por ID
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        reporteEstadisticoService.eliminar(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    // Buscar por ID de docente
-    @GetMapping("/docente/{docenteId}")
-    public ResponseEntity<List<ReporteEstadistico>> buscarPorDocente(@PathVariable Long docenteId) {
-        Usuario docente = new Usuario();
-        docente.setId(docenteId);
-        return ResponseEntity.ok(reporteEstadisticoService.buscarPorDocente(docente));
-    }
-
-    // Buscar por tipo de reporte
+    // Listar reportes por tipo (AVANCE, RENDIMIENTO, etc.)
     @GetMapping("/tipo/{tipo}")
-    public ResponseEntity<List<ReporteEstadistico>> buscarPorTipo(@PathVariable TipoReporte tipo) {
-        return ResponseEntity.ok(reporteEstadisticoService.buscarPorTipoReporte(tipo));
-    }
-
-    // Buscar por docente y tipo de reporte
-    @GetMapping("/docente/{docenteId}/tipo/{tipo}")
-    public ResponseEntity<List<ReporteEstadistico>> buscarPorDocenteYTipo(
-            @PathVariable Long docenteId,
+    public ResponseEntity<List<ReporteEstadisticoResponseDTO>> listarPorTipo(
             @PathVariable TipoReporte tipo) {
-        Usuario docente = new Usuario();
-        docente.setId(docenteId);
-        return ResponseEntity.ok(reporteEstadisticoService.buscarPorDocenteYTipo(docente, tipo));
+        return ResponseEntity.ok(reporteService.listarPorTipo(tipo));
     }
 
-    // Buscar por fechas (ejemplo simple usando timestamp como query param)
-    @GetMapping("/rango-fechas")
-    public ResponseEntity<List<ReporteEstadistico>> buscarPorRangoFechas(
-            @RequestParam("inicio") long inicio,
-            @RequestParam("fin") long fin) {
-        Date fechaInicio = new Date(inicio);
-        Date fechaFin = new Date(fin);
-        return ResponseEntity.ok(reporteEstadisticoService.buscarPorRangoFechas(fechaInicio, fechaFin));
+    // Listar reportes por rango de fechas
+    @GetMapping("/fechas")
+    public ResponseEntity<List<ReporteEstadisticoResponseDTO>> listarEntreFechas(
+            @RequestParam("inicio") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date inicio,
+            @RequestParam("fin") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date fin) {
+        return ResponseEntity.ok(reporteService.listarEntreFechas(inicio, fin));
+    }
+
+    // Listar reportes por docente y tipo
+    @GetMapping("/docente/{usuarioId}/tipo/{tipo}")
+    public ResponseEntity<List<ReporteEstadisticoResponseDTO>> listarPorDocenteYTipo(
+            @PathVariable Long usuarioId,
+            @PathVariable TipoReporte tipo) {
+        return ResponseEntity.ok(reporteService.listarPorDocenteYTipo(usuarioId, tipo));
     }
 }

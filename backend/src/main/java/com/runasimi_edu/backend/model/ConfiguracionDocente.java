@@ -1,6 +1,5 @@
 package com.runasimi_edu.backend.model;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,6 +16,7 @@ import lombok.Data;
 @Entity
 @Table(name = "configuraciones_docentes")
 public class ConfiguracionDocente {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,20 +33,19 @@ public class ConfiguracionDocente {
 
     private Boolean notificaciones = true;
 
-    public ConfiguracionDocente(){
-
+    // Constructor vacío para JPA
+    public ConfiguracionDocente() {
     }
-    
-    public ConfiguracionDocente(Usuario docente, String filtrosGuardados, Long id) {
+
+    // Constructor personalizado sin ID (se genera automáticamente)
+    public ConfiguracionDocente(Usuario docente, String filtrosGuardados, VistaPreferida vistaPreferida, Boolean notificaciones) {
         this.docente = docente;
         this.filtrosGuardados = filtrosGuardados;
-        this.id = id;
+        this.vistaPreferida = vistaPreferida;
+        this.notificaciones = notificaciones;
     }
 
-    
-    
     public enum VistaPreferida {
-    TABLA, GRAFICO
+        TABLA, GRAFICO
+    }
 }
-}
-

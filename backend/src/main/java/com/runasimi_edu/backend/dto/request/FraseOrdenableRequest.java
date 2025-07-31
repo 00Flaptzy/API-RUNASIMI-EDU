@@ -1,5 +1,7 @@
 package com.runasimi_edu.backend.dto.request;
 
+import java.util.List;
+
 import com.runasimi_edu.backend.model.Actividad.NivelDificultad;
 
 import lombok.Data;
@@ -8,7 +10,7 @@ import lombok.Data;
 public class FraseOrdenableRequest {
     private Long actividadId;
     private String fraseCorrecta;
-    private String palabrasDesordenadas;
+    private List<String> palabrasDesordenadas;
     private String traduccionEspanol;
     private NivelDificultad nivel;
     private String urlAudio;

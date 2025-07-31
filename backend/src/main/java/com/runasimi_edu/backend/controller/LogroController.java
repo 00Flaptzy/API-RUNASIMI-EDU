@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.runasimi_edu.backend.model.Logro;
+import com.runasimi_edu.backend.dto.request.LogroRequest;
+import com.runasimi_edu.backend.dto.response.LogroResponse;
 import com.runasimi_edu.backend.model.Logro.TipoLogro;
-import com.runasimi_edu.backend.model.Usuario;
 import com.runasimi_edu.backend.service.LogroService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,59 +27,53 @@ public class LogroController {
 
     private final LogroService logroService;
 
-    // Registrar nuevo logro
+    // Registrar logro
     @PostMapping
-    public ResponseEntity<Logro> registrar(@RequestBody Logro logro) {
-        return ResponseEntity.ok(logroService.registrar(logro));
+    public ResponseEntity<LogroResponse> registrar(@RequestBody LogroRequest request) {
+        LogroResponse response = logroService.registrar(request);
+        return ResponseEntity.ok(response);
     }
 
     // Listar todos los logros
     @GetMapping
-    public ResponseEntity<List<Logro>> listarTodos() {
+    public ResponseEntity<List<LogroResponse>> listarTodos() {
         return ResponseEntity.ok(logroService.listarTodos());
     }
 
-    // Buscar por ID
+    // Obtener logro por ID
     @GetMapping("/{id}")
-    public ResponseEntity<Logro> buscarPorId(@PathVariable Long id) {
-        Optional<Logro> logro = logroService.buscarPorId(id);
-        return logro.map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<LogroResponse> obtenerPorId(@PathVariable Long id) {
+        Optional<LogroResponse> response = logroService.buscarPorId(id);
+        return response.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     // Listar logros por ID de alumno
     @GetMapping("/alumno/{alumnoId}")
-    public ResponseEntity<List<Logro>> listarPorAlumno(@PathVariable Long alumnoId) {
-        Usuario alumno = new Usuario();
-        alumno.setId(alumnoId);
-        return ResponseEntity.ok(logroService.listarPorAlumno(alumno));
-    }
-
-    // Listar logros por tipo
-    @GetMapping("/tipo/{tipo}")
-    public ResponseEntity<List<Logro>> listarPorTipo(@PathVariable TipoLogro tipo) {
-        return ResponseEntity.ok(logroService.listarPorTipo(tipo));
+    public ResponseEntity<List<LogroResponse>> listarPorAlumno(@PathVariable Long alumnoId) {
+        return ResponseEntity.ok(logroService.listarPorAlumno(alumnoId));
     }
 
     // Listar logros por alumno y tipo
     @GetMapping("/alumno/{alumnoId}/tipo/{tipo}")
-    public ResponseEntity<List<Logro>> listarPorAlumnoYTipo(@PathVariable Long alumnoId, @PathVariable TipoLogro tipo) {
+    public ResponseEntity<List<LogroResponse>> listarPorAlumnoYTipo(
+            @PathVariable Long alumnoId,
+            @PathVariable TipoLogro tipo) {
         return ResponseEntity.ok(logroService.listarPorAlumnoYTipo(alumnoId, tipo));
     }
 
     // Contar logros por alumno
-    @GetMapping("/alumno/{alumnoId}/contador")
+    @GetMapping("/alumno/{alumnoId}/contar")
     public ResponseEntity<Integer> contarPorAlumno(@PathVariable Long alumnoId) {
-        Usuario alumno = new Usuario();
-        alumno.setId(alumnoId);
-        return ResponseEntity.ok(logroService.contarPorAlumno(alumno));
+        return ResponseEntity.ok(logroService.contarPorAlumno(alumnoId));
     }
 
     // Actualizar logro
     @PutMapping("/{id}")
-    public ResponseEntity<Logro> actualizar(@PathVariable Long id, @RequestBody Logro logro) {
-        logro.setId(id);
-        return ResponseEntity.ok(logroService.actualizar(logro));
+    public ResponseEntity<LogroResponse> actualizar(
+            @PathVariable Long id,
+            @RequestBody LogroRequest request) {
+        LogroResponse actualizado = logroService.actualizar(id, request);
+        return ResponseEntity.ok(actualizado);
     }
 
     // Eliminar logro

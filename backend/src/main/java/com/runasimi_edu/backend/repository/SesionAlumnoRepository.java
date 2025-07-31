@@ -12,18 +12,23 @@ import com.runasimi_edu.backend.model.SesionAlumno;
 import com.runasimi_edu.backend.model.Usuario;
 
 public interface SesionAlumnoRepository extends JpaRepository<SesionAlumno, Long> {
+
+    // Validar si ya existe una sesión registrada por alumno y actividad
+    boolean existsByAlumnoAndActividad(Usuario alumno, Actividad actividad);
+
+    // Búsquedas estándar
     List<SesionAlumno> findByAlumno(Usuario alumno);
     List<SesionAlumno> findByActividad(Actividad actividad);
     List<SesionAlumno> findByAlumnoIdAndCompletado(Long alumnoId, Boolean completado);
     List<SesionAlumno> findByFechaInicioBetween(Date inicio, Date fin);
     int countByActividadAndCompletado(Actividad actividad, Boolean completado);
     List<SesionAlumno> findByAlumnoAndCompletado(Usuario alumno, Boolean completado);
-    
-    // Métodos corregidos con consultas JPQL explícitas
-    
+
+    // Suma de puntos obtenidos por ID de alumno
     @Query("SELECT SUM(s.puntosObtenidos) FROM SesionAlumno s WHERE s.alumno.id = :alumnoId")
     Integer sumPuntosObtenidosByAlumnoId(@Param("alumnoId") Long alumnoId);
-    
+
+    // Suma de puntos obtenidos por objeto alumno
     @Query("SELECT SUM(s.puntosObtenidos) FROM SesionAlumno s WHERE s.alumno = :alumno")
     Integer sumPuntosObtenidosByAlumno(@Param("alumno") Usuario alumno);
 }

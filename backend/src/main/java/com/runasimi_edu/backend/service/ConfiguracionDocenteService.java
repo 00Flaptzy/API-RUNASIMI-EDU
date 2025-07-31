@@ -5,9 +5,12 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.runasimi_edu.backend.dto.response.UsuarioResponse;
+import com.runasimi_edu.backend.dto.request.ConfiguracionDocenteRequest;
+import com.runasimi_edu.backend.dto.response.ConfiguracionDocenteResponse;
 import com.runasimi_edu.backend.model.ConfiguracionDocente;
+import com.runasimi_edu.backend.model.Usuario;
 import com.runasimi_edu.backend.repository.ConfiguracionDocenteRepository;
+import com.runasimi_edu.backend.repository.UsuarioRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -17,24 +20,46 @@ public class ConfiguracionDocenteService {
     @Autowired
     private ConfiguracionDocenteRepository configuracionDocenteRepository;
 
-    // Guardar nueva configuración o actualizar existente
-    public ConfiguracionDocente guardar(ConfiguracionDocente configuracion) {
-        return configuracionDocenteRepository.save(configuracion);
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    // Guardar o actualizar configuración
+    public ConfiguracionDocenteResponse guardar(ConfiguracionDocenteRequest request) {
+        // Validar que el docente exista
+        Usuario docente = usuarioRepository.findById(request.getDocenteId())
+                .orElseThrow(() -> new IllegalArgumentException("El docente con ID " + request.getDocenteId() + " no existe."));
+
+        // Buscar configuración existente por docente
+        Optional<ConfiguracionDocente> existente = configuracionDocenteRepository.findByDocente(docente);
+
+        ConfiguracionDocente configuracion = existente.orElseGet(() -> new ConfiguracionDocente());
+        configuracion.setDocente(docente);
+        configuracion.setVistaPreferida(
+                request.getVistaPreferida() != null ? request.getVistaPreferida() : ConfiguracionDocente.VistaPreferida.TABLA);
+        configuracion.setFiltrosGuardados(request.getFiltrosGuardados());
+        configuracion.setNotificaciones(
+                request.getNotificaciones() != null ? request.getNotificaciones() : true);
+
+        ConfiguracionDocente guardada = configuracionDocenteRepository.save(configuracion);
+        return new ConfiguracionDocenteResponse(guardada);
     }
 
-    // Buscar configuración por ID
-    public Optional<ConfiguracionDocente> buscarPorId(Long id) {
-        return configuracionDocenteRepository.findById(id);
+    // Buscar por ID
+    public ConfiguracionDocenteResponse buscarPorId(Long id) {
+        ConfiguracionDocente configuracion = configuracionDocenteRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("No existe configuración con ID: " + id));
+        return new ConfiguracionDocenteResponse(configuracion);
     }
 
-    // Buscar configuración por docente
-    public Optional<ConfiguracionDocente> buscarPorDocente(UsuarioResponse docente) {
-        return configuracionDocenteRepository.findByDocente(docente);
-    }
+    // Buscar por ID de docente
+    public ConfiguracionDocenteResponse buscarPorDocenteId(Long docenteId) {
+        Usuario docente = usuarioRepository.findById(docenteId)
+                .orElseThrow(() -> new IllegalArgumentException("El docente con ID " + docenteId + " no existe."));
 
-    // Verificar si existe una configuración para ese docente
-    public boolean existePorDocente(UsuarioResponse docente) {
-        return configuracionDocenteRepository.existsByDocente(docente);
+        ConfiguracionDocente configuracion = configuracionDocenteRepository.findByDocente(docente)
+                .orElseThrow(() -> new IllegalArgumentException("No existe configuración para el docente con ID: " + docenteId));
+
+        return new ConfiguracionDocenteResponse(configuracion);
     }
 
     // Eliminar por ID

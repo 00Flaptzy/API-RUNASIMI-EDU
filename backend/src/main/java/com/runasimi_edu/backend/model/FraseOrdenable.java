@@ -1,9 +1,13 @@
 package com.runasimi_edu.backend.model;
 
+import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.runasimi_edu.backend.model.Actividad.NivelDificultad;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -19,19 +23,26 @@ import lombok.Data;
 @Entity
 @Table(name = "frases_ordenables")
 public class FraseOrdenable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "actividad_id", nullable = false)
     private Actividad actividad;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String fraseCorrecta;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String palabrasDesordenadas;
+   @ElementCollection
+@CollectionTable(
+    name = "frase_ordenable_palabras",
+    joinColumns = @JoinColumn(name = "frase_ordenable_id")
+)
+@Column(name = "palabra", nullable = false)
+private List<String> palabrasDesordenadas;
 
     @Column(columnDefinition = "TEXT")
     private String traduccionEspanol;
@@ -42,11 +53,10 @@ public class FraseOrdenable {
     private String urlAudio;
     private String urlImagen;
 
-    public FraseOrdenable(){
-
+    public FraseOrdenable() {
     }
-    
-    public FraseOrdenable(Actividad actividad, String fraseCorrecta, Long id, NivelDificultad nivel, String palabrasDesordenadas, String traduccionEspanol, String urlAudio, String urlImagen) {
+
+    public FraseOrdenable(Actividad actividad, String fraseCorrecta, Long id, NivelDificultad nivel, List<String> palabrasDesordenadas, String traduccionEspanol, String urlAudio, String urlImagen) {
         this.actividad = actividad;
         this.fraseCorrecta = fraseCorrecta;
         this.id = id;
@@ -56,6 +66,4 @@ public class FraseOrdenable {
         this.urlAudio = urlAudio;
         this.urlImagen = urlImagen;
     }
-
-    
 }

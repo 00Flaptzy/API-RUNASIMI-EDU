@@ -79,6 +79,12 @@ public class UsuarioService {
     public Usuario guardarUsuario(Usuario usuario) {
         return usuarioRepository.save(usuario);
     }
+    // Listar usuarios por rol y grado
+    public List<UsuarioResponse> listarPorRolYGrado(RolUsuario rol, Long gradoId) {
+    return usuarioRepository.findByRolAndGradoId(rol, gradoId).stream()
+            .map(this::convertirAResponse)
+            .collect(Collectors.toList());
+}
 
     // Eliminar usuario
     public void eliminarUsuario(Long id) {

@@ -2,10 +2,11 @@ package com.runasimi_edu.backend.service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.runasimi_edu.backend.dto.response.SesionAlumnoResponse;
 import com.runasimi_edu.backend.model.Actividad;
 import com.runasimi_edu.backend.model.SesionAlumno;
 import com.runasimi_edu.backend.model.Usuario;
@@ -21,58 +22,133 @@ public class SesionAlumnoService {
     private final SesionAlumnoRepository sesionAlumnoRepository;
     private final UsuarioRepository usuarioRepository;
 
-    // Guardar o actualizar una sesión
-    public SesionAlumno guardarSesion(SesionAlumno sesion) {
-        return sesionAlumnoRepository.save(sesion);
+    // Guardar una nueva sesión
+    public SesionAlumnoResponse guardarSesion(SesionAlumno sesion) {
+        if (sesion == null || sesion.getAlumno() == null || sesion.getActividad() == null) {
+            throw new IllegalArgumentException("Sesión, alumno o actividad no pueden ser nulos.");
+        }
+
+        boolean yaExiste = sesionAlumnoRepository.existsByAlumnoAndActividad(
+            sesion.getAlumno(), sesion.getActividad()
+        );
+
+        if (yaExiste) {
+            throw new IllegalStateException("El alumno ya tiene una sesión registrada para esta actividad.");
+        }
+
+        SesionAlumno guardada = sesionAlumnoRepository.save(sesion);
+        return mapearASesionAlumnoResponse(guardada);
     }
 
-    // Obtener todas las sesiones
-    public List<SesionAlumno> listarTodas() {
-        return sesionAlumnoRepository.findAll();
+    // Actualizar una sesión existente
+    @Transactional
+    public SesionAlumnoResponse actualizarSesion(Long sesionId, SesionAlumno nuevosDatos) {
+        SesionAlumno existente = sesionAlumnoRepository.findById(sesionId)
+            .orElseThrow(() -> new IllegalArgumentException("Sesión no encontrada con ID: " + sesionId));
+
+        if (Boolean.TRUE.equals(existente.getCompletado())) {
+            throw new IllegalStateException("Esta sesión ya fue completada y no puede ser modificada.");
+        }
+
+        existente.setFechaFin(nuevosDatos.getFechaFin());
+        existente.setPuntosObtenidos(nuevosDatos.getPuntosObtenidos());
+        existente.setIntentos(nuevosDatos.getIntentos());
+        existente.setTiempoSegundos(nuevosDatos.getTiempoSegundos());
+        existente.setEstado(SesionAlumno.EstadoSesion.COMPLETADO);
+        existente.setCompletado(true);
+        existente.setUltimoItem(nuevosDatos.getUltimoItem());
+        existente.setDetalles(nuevosDatos.getDetalles());
+
+        SesionAlumno actualizada = sesionAlumnoRepository.save(existente);
+        return mapearASesionAlumnoResponse(actualizada);
     }
 
-    // Obtener sesiones por alumno (usando el objeto directamente)
-    public List<SesionAlumno> listarPorAlumno(Usuario alumno) {
-        return sesionAlumnoRepository.findByAlumno(alumno);
+    // Listar todas las sesiones en formato DTO
+    public List<SesionAlumnoResponse> listarTodas() {
+        return sesionAlumnoRepository.findAll().stream()
+            .map(this::mapearASesionAlumnoResponse)
+            .toList();
     }
 
-    // Obtener sesiones por actividad
-    public List<SesionAlumno> listarPorActividad(Actividad actividad) {
-        return sesionAlumnoRepository.findByActividad(actividad);
-    }
-
-    // Obtener sesiones completadas por alumno (usando alumnoId)
-    public List<SesionAlumno> listarPorAlumnoYCompletado(Long alumnoId, Boolean completado) {
+    // Listar sesiones por alumno en formato DTO
+    public List<SesionAlumnoResponse> listarPorAlumno(Long alumnoId) {
         Usuario alumno = usuarioRepository.findById(alumnoId)
             .orElseThrow(() -> new IllegalArgumentException("Alumno no encontrado con ID: " + alumnoId));
-        return sesionAlumnoRepository.findByAlumnoAndCompletado(alumno, completado);
+        return sesionAlumnoRepository.findByAlumno(alumno).stream()
+            .map(this::mapearASesionAlumnoResponse)
+            .toList();
     }
 
-    // Buscar por ID
-    public Optional<SesionAlumno> buscarPorId(Long id) {
-        return sesionAlumnoRepository.findById(id);
+    public List<SesionAlumnoResponse> listarPorActividad(Actividad actividad) {
+        if (actividad == null) {
+            throw new IllegalArgumentException("La actividad no puede ser nula.");
+        }
+        return sesionAlumnoRepository.findByActividad(actividad).stream()
+            .map(this::mapearASesionAlumnoResponse)
+            .toList();
     }
 
-    // Eliminar por ID
+    public List<SesionAlumnoResponse> listarPorAlumnoYCompletado(Long alumnoId, Boolean completado) {
+        Usuario alumno = usuarioRepository.findById(alumnoId)
+            .orElseThrow(() -> new IllegalArgumentException("Alumno no encontrado con ID: " + alumnoId));
+        return sesionAlumnoRepository.findByAlumnoAndCompletado(alumno, completado).stream()
+            .map(this::mapearASesionAlumnoResponse)
+            .toList();
+    }
+
+    public SesionAlumnoResponse buscarPorId(Long id) {
+        SesionAlumno sesion = sesionAlumnoRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Sesión no encontrada con ID: " + id));
+        return mapearASesionAlumnoResponse(sesion);
+    }
+
     public void eliminarPorId(Long id) {
+        if (!sesionAlumnoRepository.existsById(id)) {
+            throw new IllegalArgumentException("No existe la sesión con ID: " + id);
+        }
         sesionAlumnoRepository.deleteById(id);
     }
 
-    // Buscar sesiones entre fechas
-    public List<SesionAlumno> buscarPorRangoFechas(Date inicio, Date fin) {
-        return sesionAlumnoRepository.findByFechaInicioBetween(inicio, fin);
+    public List<SesionAlumnoResponse> buscarPorRangoFechas(Date inicio, Date fin) {
+        if (inicio == null || fin == null) {
+            throw new IllegalArgumentException("Las fechas no pueden ser nulas.");
+        }
+        return sesionAlumnoRepository.findByFechaInicioBetween(inicio, fin).stream()
+            .map(this::mapearASesionAlumnoResponse)
+            .toList();
     }
 
-    // Contar sesiones completadas por actividad
     public int contarCompletadasPorActividad(Actividad actividad) {
+        if (actividad == null) {
+            throw new IllegalArgumentException("La actividad no puede ser nula.");
+        }
         return sesionAlumnoRepository.countByActividadAndCompletado(actividad, true);
     }
 
-    // Sumar puntos obtenidos por alumno (usando alumnoId)
     public Integer obtenerPuntajeTotalPorAlumno(Long alumnoId) {
         Usuario alumno = usuarioRepository.findById(alumnoId)
             .orElseThrow(() -> new IllegalArgumentException("Alumno no encontrado con ID: " + alumnoId));
         Integer suma = sesionAlumnoRepository.sumPuntosObtenidosByAlumno(alumno);
         return (suma != null) ? suma : 0;
+    }
+
+    // === Mapper interno ===
+    private SesionAlumnoResponse mapearASesionAlumnoResponse(SesionAlumno sesion) {
+        return new SesionAlumnoResponse(
+            sesion.getActividad().getId(),
+            sesion.getActividad().getNombre(),
+            sesion.getAlumno().getId(),
+            sesion.getAlumno().getNombreCompleto(),
+            sesion.getCompletado(),
+            sesion.getDetalles(),
+            sesion.getEstado(),
+            sesion.getFechaFin(),
+            sesion.getFechaInicio(),
+            sesion.getId(),
+            sesion.getIntentos(),
+            sesion.getPuntosObtenidos(),
+            sesion.getTiempoSegundos(),
+            sesion.getUltimoItem()
+        );
     }
 }

@@ -25,10 +25,12 @@ public class SesionAlumno {
     private Long id;
 
     @ManyToOne
+
     @JoinColumn(name = "alumno_id", nullable = false)
     private Usuario alumno;
 
     @ManyToOne
+
     @JoinColumn(name = "actividad_id", nullable = false)
     private Actividad actividad;
 
